@@ -77,19 +77,21 @@ class App(tk.Tk):
         self._cell_size = 10
         self._game = Game(cols, rows)
         self._create_widgets()
-        self.canvas.create_text(100, 100, text='Left click to add cell.\n\nRight click to remove.', tags='help')
+        self.canvas.create_text(100, 100, text='Left click/drag to create cell.\n\nRight click/drag to remove.', tags='help')
         self._grid = None
 
     def _create_widgets(self):    
         self.title('Game of Life')  
         self.is_playing = False
-        self.bind('<space>', lambda a: self._tick() if not self.is_playing else None)
-        self.bind('<Escape>', lambda a: self.destroy())
+        self.bind('<Key-space>', lambda a: self._tick() if not self.is_playing else None)
+        self.bind('<Key-Escape>', lambda a: self.destroy())
         self.canvas = tk.Canvas(self, 
             width=self._rows * App.CELL_SIZE, 
             height=self._cols * App.CELL_SIZE)
         self.canvas.bind('<Button-1>', self._cmd_click)
         self.canvas.bind('<Button-2>', self._cmd_click)
+        self.canvas.bind('<B1-Motion>', lambda event: self._cmd_drag(event, Game.CELL_ALIVE))
+        self.canvas.bind('<B2-Motion>', lambda event: self._cmd_drag(event, Game.CELL_DEAD))
         
         self.btn_stop = tk.Button(self, text='Stop', command=self._cmd_stop, state=tk.DISABLED)
         self.btn_play = tk.Button(self, text='Play', command=self._cmd_start)
@@ -122,6 +124,12 @@ class App(tk.Tk):
         x = event.x // app.CELL_SIZE
         y = event.y // app.CELL_SIZE
         state = Game.CELL_ALIVE if event.num == 1 else Game.CELL_DEAD
+        self._game.state[x][y] = state
+        self._update_grid()
+
+    def _cmd_drag(self, event, state):
+        x = event.x // app.CELL_SIZE
+        y = event.y // app.CELL_SIZE
         self._game.state[x][y] = state
         self._update_grid()
 
