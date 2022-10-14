@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-# Author: Damian Lozinski <lozinski.d@gmail.com>
-# Licence: GPLv3
+# Author: Damian Lozinski <lozinski.d at gmail dot com>
+# Licence: MIT
 
 import random
 import tkinter as tk
