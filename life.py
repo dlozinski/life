@@ -76,15 +76,14 @@ class App(tk.Tk):
         self._cols = cols
         self._cell_size = 10
         self._game = Game(cols, rows)
+        self.bind('<Key-space>', lambda event: self._tick() if not self.is_running else None)
         self._create_widgets()
-        self.canvas.create_text(100, 100, text='Left click/drag to create cell.\n\nRight click/drag to remove.', tags='help')
         self._grid = None
+
 
     def _create_widgets(self):    
         self.title('Game of Life')  
-        self.is_playing = False
-        self.bind('<Key-space>', lambda a: self._tick() if not self.is_playing else None)
-        self.bind('<Key-Escape>', lambda a: self.destroy())
+        self.is_running = False
         self.canvas = tk.Canvas(self, 
             width=self._rows * App.CELL_SIZE, 
             height=self._cols * App.CELL_SIZE)
@@ -92,33 +91,35 @@ class App(tk.Tk):
         self.canvas.bind('<Button-2>', self._cmd_click)
         self.canvas.bind('<B1-Motion>', lambda event: self._cmd_drag(event, Game.CELL_ALIVE))
         self.canvas.bind('<B2-Motion>', lambda event: self._cmd_drag(event, Game.CELL_DEAD))
-        
+        self.canvas.create_text(120, 100, 
+            text='Left click/drag to create cell.\n\nRight click/drag to remove.\n\nPress <space> for next generation.',
+            tags='help')
         self.btn_stop = tk.Button(self, text='Stop', command=self._cmd_stop, state=tk.DISABLED)
-        self.btn_play = tk.Button(self, text='Play', command=self._cmd_start)
+        self.btn_run = tk.Button(self, text='Run', command=self._cmd_start)
         self.btn_random = tk.Button(self, text='Random', command=self._cmd_random)
         self.btn_glider = tk.Button(self, text='Glider', command=self._cmd_glider)
         self.canvas.pack()
         self.btn_stop.pack(side=tk.RIGHT)
-        self.btn_play.pack(side=tk.RIGHT)
+        self.btn_run.pack(side=tk.RIGHT)
         self.btn_random.pack(side=tk.RIGHT)
         self.btn_glider.pack(side=tk.RIGHT)        
 
     def _cmd_start(self):
-            self.is_playing = True
-            self.btn_play.config(state=tk.DISABLED)
+            self.is_running = True
+            self.btn_run.config(state=tk.DISABLED)
             self.btn_stop.config(state=tk.NORMAL)
             self._tick()
                 
     def _tick(self):
         self._game.tick()
         self._update_grid()
-        if self.is_playing:
+        if self.is_running:
             self.after(App.TICK_INTERVAL, self._tick)
 
     def _cmd_stop(self):
-        self.is_playing = False
+        self.is_running = False
         self.btn_stop.config(state=tk.DISABLED)
-        self.btn_play.config(state=tk.NORMAL)
+        self.btn_run.config(state=tk.NORMAL)
 
     def _cmd_click(self, event):
         x = event.x // app.CELL_SIZE
