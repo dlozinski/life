@@ -9,6 +9,7 @@ import tkinter as tk
 DEFAULT_GAME_ROWS = 25
 DEFAULT_GAME_COLS = 25
 
+
 class Game:
     CELL_ALIVE = 1
     CELL_DEAD = 0
@@ -17,7 +18,8 @@ class Game:
         self._rows = rows
         self._cols = cols
         self.state = [[Game.CELL_DEAD] * self._cols for _ in range(self._rows)]
-        self._next_state = [[Game.CELL_DEAD] * self._cols for _ in range(self._rows)]
+        self._next_state = [[Game.CELL_DEAD] * self._cols 
+            for _ in range(self._rows)]
 
     def reset(self):
         for i in range(self._rows):
@@ -31,12 +33,12 @@ class Game:
 
     def glider(self):
         self.reset()
-        x = (self._rows // 2) 
-        y = (self._cols // 2) 
-        self.state[x    ][y - 1] = Game.CELL_ALIVE
-        self.state[x + 1][y    ] = Game.CELL_ALIVE
+        x = (self._rows // 2)
+        y = (self._cols // 2)
+        self.state[x][y - 1] = Game.CELL_ALIVE
+        self.state[x + 1][y] = Game.CELL_ALIVE
         self.state[x - 1][y + 1] = Game.CELL_ALIVE
-        self.state[x    ][y + 1] = Game.CELL_ALIVE
+        self.state[x][y + 1] = Game.CELL_ALIVE
         self.state[x + 1][y + 1] = Game.CELL_ALIVE
 
     def tick(self):
@@ -70,46 +72,53 @@ class Game:
         return count
 
 
-class App(tk.Tk): 
+class App(tk.Tk):
     TICK_INTERVAL = 100
     CELL_SIZE = 10
+
     def __init__(self, rows, cols):
-        super(App, self).__init__() 
+        super(App, self).__init__()
         self._rows = rows
         self._cols = cols
         self._cell_size = 10
         self._game = Game(rows, cols)
-        self.bind('<Key-space>', lambda event: self._tick() if not self.is_running else None)
+        self.bind('<Key-space>', 
+                  lambda event: self._tick() if not self.is_running else None)
         self.bind('<Key-Escape>', lambda event: self._cmd_reset())
         self._create_widgets()
         self._grid = None
         self.is_running = False
         self._runing_id = None
 
-    def _create_widgets(self):    
-        self.title('Game of Life')  
-        self.canvas = tk.Canvas(self, 
-            width=self._rows * App.CELL_SIZE, 
-            height=self._cols * App.CELL_SIZE)
+    def _create_widgets(self):
+        self.title('Game of Life')
+        self.canvas = tk.Canvas(self,
+                                width=self._rows * App.CELL_SIZE,
+                                height=self._cols * App.CELL_SIZE)
         self.canvas.bind('<Button-1>', self._cmd_click)
         self.canvas.bind('<Button-2>', self._cmd_click)
-        self.canvas.bind('<B1-Motion>', lambda event: self._cmd_drag(event, Game.CELL_ALIVE))
-        self.canvas.bind('<B2-Motion>', lambda event: self._cmd_drag(event, Game.CELL_DEAD))
-        self.canvas.create_text(120, 100, 
-            text='Left click/drag -  create cell\n'
-            '\nRight click/drag - remove cell\n'
-            '\n<space> - next generation\n'
-            '\n<Esc> - clear',
-            tags='help')
-        self.btn_stop = tk.Button(self, text='Stop', command=self._cmd_stop, state=tk.DISABLED)
+        self.canvas.bind('<B1-Motion>', 
+                         lambda event: self._cmd_drag(event, Game.CELL_ALIVE))
+        self.canvas.bind('<B2-Motion>',
+                         lambda event: self._cmd_drag(event, Game.CELL_DEAD))
+        self.canvas.create_text(120, 100,
+                                text='Left click/drag -  create cell\n'
+                                '\nRight click/drag - remove cell\n'
+                                '\n<space> - next generation\n'
+                                '\n<Esc> - clear',
+                                tags='help')
+        self.btn_stop = tk.Button(self, text='Stop',
+                                  command=self._cmd_stop, state=tk.DISABLED)
         self.btn_run = tk.Button(self, text='Run', command=self._cmd_start)
-        self.btn_random = tk.Button(self, text='Random', command=self._cmd_random)
-        self.btn_glider = tk.Button(self, text='Glider', command=self._cmd_glider)
+        self.btn_random = tk.Button(self, text='Random',
+                                    command=self._cmd_random)
+        self.btn_glider = tk.Button(self, text='Glider',
+                                    command=self._cmd_glider)
         self.canvas.pack()
         self.btn_stop.pack(side=tk.RIGHT)
         self.btn_run.pack(side=tk.RIGHT)
         self.btn_random.pack(side=tk.RIGHT)
-        self.btn_glider.pack(side=tk.RIGHT)        
+        self.btn_glider.pack(side=tk.RIGHT)
 
     def _cmd_reset(self):
         if self._runing_id is not None:
@@ -122,11 +131,11 @@ class App(tk.Tk):
         self._grid = None
 
     def _cmd_start(self):
-            self.is_running = True
-            self.btn_run.config(state=tk.DISABLED)
-            self.btn_stop.config(state=tk.NORMAL)
-            self._tick()
-                
+        self.is_running = True
+        self.btn_run.config(state=tk.DISABLED)
+        self.btn_stop.config(state=tk.NORMAL)
+        self._tick()
+
     def _tick(self):
         self._game.tick()
         self._update_grid()
@@ -168,7 +177,8 @@ class App(tk.Tk):
             for j in range(self._cols):
                 x = i * delta
                 y = j * delta
-                self._grid[i][j] = self.canvas.create_rectangle(x, y, x + delta, y + delta, tags='cells')
+                self._grid[i][j] = self.canvas.create_rectangle(
+                    x, y, x + delta, y + delta, tags='cells')
 
     def _update_grid(self):
         if self._grid is None:
@@ -176,7 +186,8 @@ class App(tk.Tk):
 
         for i in range(self._rows):
             for j in range(self._cols):
-                self.canvas.itemconfig(self._grid[i][j], 
+                self.canvas.itemconfig(
+                    self._grid[i][j],
                     fill='black' if self._game.state[i][j] == Game.CELL_ALIVE else 'white')
 
 
@@ -197,7 +208,8 @@ def get_args():
             f"\nUsage: {sys.argv[0]} [ <rows> [ <columns> ] ]")
     return int(rows), int(cols)
 
+
 if __name__ == '__main__':
-    rows, cols = get_args()      
-    app = App(rows, cols)            
+    rows, cols = get_args()
+    app = App(rows, cols)
     app.mainloop()
