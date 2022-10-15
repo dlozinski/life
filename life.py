@@ -6,6 +6,8 @@
 import random
 import tkinter as tk
 
+DEFAULT_GAME_ROWS = 25
+DEFAULT_GAME_COLS = 25
 
 class Game:
     CELL_ALIVE = 1
@@ -29,7 +31,8 @@ class Game:
 
     def glider(self):
         self.reset()
-        x, y = self._rows // 2 + 1, self._cols // 2 + 1
+        x = (self._rows // 2) 
+        y = (self._cols // 2) 
         self.state[x    ][y - 1] = Game.CELL_ALIVE
         self.state[x + 1][y    ] = Game.CELL_ALIVE
         self.state[x - 1][y + 1] = Game.CELL_ALIVE
@@ -75,15 +78,16 @@ class App(tk.Tk):
         self._rows = rows
         self._cols = cols
         self._cell_size = 10
-        self._game = Game(cols, rows)
+        self._game = Game(rows, cols)
         self.bind('<Key-space>', lambda event: self._tick() if not self.is_running else None)
+        self.bind('<Key-Escape>', lambda event: self._cmd_reset())
         self._create_widgets()
         self._grid = None
-
+        self.is_running = False
+        self._runing_id = None
 
     def _create_widgets(self):    
         self.title('Game of Life')  
-        self.is_running = False
         self.canvas = tk.Canvas(self, 
             width=self._rows * App.CELL_SIZE, 
             height=self._cols * App.CELL_SIZE)
@@ -92,7 +96,10 @@ class App(tk.Tk):
         self.canvas.bind('<B1-Motion>', lambda event: self._cmd_drag(event, Game.CELL_ALIVE))
         self.canvas.bind('<B2-Motion>', lambda event: self._cmd_drag(event, Game.CELL_DEAD))
         self.canvas.create_text(120, 100, 
-            text='Left click/drag to create cell.\n\nRight click/drag to remove.\n\nPress <space> for next generation.',
+            text='Left click/drag -  create cell\n'
+            '\nRight click/drag - remove cell\n'
+            '\n<space> - next generation\n'
+            '\n<Esc> - clear',
             tags='help')
         self.btn_stop = tk.Button(self, text='Stop', command=self._cmd_stop, state=tk.DISABLED)
         self.btn_run = tk.Button(self, text='Run', command=self._cmd_start)
@@ -104,6 +111,16 @@ class App(tk.Tk):
         self.btn_random.pack(side=tk.RIGHT)
         self.btn_glider.pack(side=tk.RIGHT)        
 
+    def _cmd_reset(self):
+        if self._runing_id is not None:
+            self.canvas.after_cancel(self._runing_id)
+        self.is_running = False
+        self.btn_run.config(state=tk.NORMAL)
+        self.btn_stop.config(state=tk.DISABLED)
+        self._game.reset()
+        self.canvas.delete('cells')
+        self._grid = None
+
     def _cmd_start(self):
             self.is_running = True
             self.btn_run.config(state=tk.DISABLED)
@@ -114,23 +131,25 @@ class App(tk.Tk):
         self._game.tick()
         self._update_grid()
         if self.is_running:
-            self.after(App.TICK_INTERVAL, self._tick)
+            self._runing_id = self.after(App.TICK_INTERVAL, self._tick)
 
     def _cmd_stop(self):
+        if self._runing_id is not None:
+            self.after_cancel(self._runing_id)
         self.is_running = False
         self.btn_stop.config(state=tk.DISABLED)
         self.btn_run.config(state=tk.NORMAL)
 
     def _cmd_click(self, event):
-        x = event.x // app.CELL_SIZE
-        y = event.y // app.CELL_SIZE
+        x = event.x // App.CELL_SIZE
+        y = event.y // App.CELL_SIZE
         state = Game.CELL_ALIVE if event.num == 1 else Game.CELL_DEAD
         self._game.state[x][y] = state
         self._update_grid()
 
     def _cmd_drag(self, event, state):
-        x = event.x // app.CELL_SIZE
-        y = event.y // app.CELL_SIZE
+        x = event.x // App.CELL_SIZE
+        y = event.y // App.CELL_SIZE
         self._game.state[x][y] = state
         self._update_grid()
 
@@ -149,7 +168,7 @@ class App(tk.Tk):
             for j in range(self._cols):
                 x = i * delta
                 y = j * delta
-                self._grid[i][j] = self.canvas.create_rectangle(x, y, x + delta, y + delta)
+                self._grid[i][j] = self.canvas.create_rectangle(x, y, x + delta, y + delta, tags='cells')
 
     def _update_grid(self):
         if self._grid is None:
@@ -160,7 +179,8 @@ class App(tk.Tk):
                 self.canvas.itemconfig(self._grid[i][j], 
                     fill='black' if self._game.state[i][j] == Game.CELL_ALIVE else 'white')
 
-def parse_command_line_args():
+
+def get_args():
     import sys
     if len(sys.argv) == 3:
         rows = sys.argv[1]
@@ -169,13 +189,15 @@ def parse_command_line_args():
         rows = sys.argv[1]
         cols = rows
     elif len(sys.argv) == 1:
-        rows = 25
-        cols = 25
+        rows = DEFAULT_GAME_ROWS
+        cols = DEFAULT_GAME_COLS
     else:
-        raise ValueError(f"Too many arguments: {' '.join(sys.argv[1:])}\nUsage: {sys.argv[0]} [ <rows> [ <columns> ] ]")
+        raise ValueError(
+            f"Too many arguments: {' '.join(sys.argv[1:])}"
+            f"\nUsage: {sys.argv[0]} [ <rows> [ <columns> ] ]")
     return int(rows), int(cols)
-   
+
 if __name__ == '__main__':
-    rows, colls = parse_command_line_args()
-    app = App(rows, colls)            
+    rows, cols = get_args()      
+    app = App(rows, cols)            
     app.mainloop()
