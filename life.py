@@ -141,15 +141,15 @@ class App(tk.Tk):
         self.btn_run.config(state=tk.NORMAL)
 
     def _cmd_click(self, event):
-        x = event.x // App.CELL_SIZE
-        y = event.y // App.CELL_SIZE
+        x = min(event.x // App.CELL_SIZE, self._cols - 1)
+        y = min(event.y // App.CELL_SIZE, self._rows - 1)
         state = Game.CELL_ALIVE if event.num == 1 else Game.CELL_DEAD
         self._game.state[x][y] = state
         self._update_grid()
 
     def _cmd_drag(self, event, state):
-        x = event.x // App.CELL_SIZE
-        y = event.y // App.CELL_SIZE
+        x = min(event.x // App.CELL_SIZE, self._cols - 1)
+        y = min(event.y // App.CELL_SIZE, self._rows - 1)
         self._game.state[x][y] = state
         self._update_grid()
 
