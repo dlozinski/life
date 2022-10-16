@@ -107,9 +107,12 @@ class App(tk.Tk):
                                 height=self._cols * App.CELL_SIZE)
         self.canvas.bind('<Button-1>', self._cmd_click)
         self.canvas.bind('<Button-2>', self._cmd_click)
+        self.canvas.bind('<Button-3>', self._cmd_click)
         self.canvas.bind('<B1-Motion>', 
                          lambda event: self._cmd_drag(event, Game.CELL_ALIVE))
         self.canvas.bind('<B2-Motion>',
+                         lambda event: self._cmd_drag(event, Game.CELL_DEAD))
+        self.canvas.bind('<B3-Motion>',
                          lambda event: self._cmd_drag(event, Game.CELL_DEAD))
         self.canvas.create_text(120, 100,
                                 text='Left click/drag -  create cell\n'
