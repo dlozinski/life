@@ -27,12 +27,12 @@ class Game:
             for j in range(self._cols):
                 self.state[i][j] = Game.CELL_DEAD
 
-    def random(self):
+    def init_random(self):
         for i in range(self._rows):
             for j in range(self._cols):
                 self.state[i][j] = random.randint(0, 1)
 
-    def glider(self):
+    def init_glider(self):
         self.reset()
         x = (self._rows // 2)
         y = (self._cols // 2)
@@ -178,11 +178,11 @@ class App(tk.Tk):
         self._update_grid()
 
     def _cmd_random(self):
-        self._game.random()
+        self._game.init_random()
         self._update_grid()
 
     def _cmd_glider(self):
-        self._game.glider()
+        self._game.init_glider()
         self._update_grid()
 
     def _init_grid(self):
