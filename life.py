@@ -20,6 +20,7 @@ class Game:
         self.state = [[Game.CELL_DEAD] * self._cols for _ in range(self._rows)]
         self._next_state = [[Game.CELL_DEAD] * self._cols 
             for _ in range(self._rows)]
+        self.set_torus_universe(False)
 
     def reset(self):
         for i in range(self._rows):
@@ -50,26 +51,35 @@ class Game:
         self._next_state = tmp
 
     def _get_next_state(self, row, col):
-        live_neighbours = self._count_live_neighbours(row, col)
+        live_neighbours = self._count_neighbours(row, col)
         if live_neighbours == 3:
             return Game.CELL_ALIVE
         if live_neighbours == 2:
             return self.state[row][col]
         return Game.CELL_DEAD
 
-    def _count_live_neighbours(self, row, col):
+    def _count_neighbours_on_plane(self, row, col):
         left = max(0, col - 1)
         right = min(self._cols, col + 1)
-        count = 0
-        if col > 0:
-            count += self.state[row][left]
-        if col < self._cols - 1:
-            count += self.state[row][right]
-        if row > 0:
-            count += sum(self.state[row - 1][left:right+1])
-        if row < self._rows - 1:
-            count += sum(self.state[row + 1][left:right+1])
+        count = 0    
+        count += col > 0 and self.state[row][left]
+        count += col < self._cols - 1 and self.state[row][right]
+        count += row > 0 and sum(self.state[row - 1][left:right+1])
+        count += row < self._rows - 1 and sum(self.state[row + 1][left:right+1])
         return count
+
+    def _count_neighbours_on_torus(self, row, col):
+        left = col - 1
+        right = (col + 1) % self._cols
+        top = row - 1
+        bottom = (row + 1) % self._rows
+        s = self.state
+        return (s[top][left] + s[top][col] + s[top][right]
+                + s[row][left] + s[row][right] 
+                + s[bottom][left] + s[bottom][col] + s[bottom][right])
+    
+    def set_torus_universe(self, is_torus: bool):
+        self._count_neighbours = self._count_neighbours_on_torus if is_torus else self._count_neighbours_on_plane
 
 
 class App(tk.Tk):
@@ -105,7 +115,7 @@ class App(tk.Tk):
                                 text='Left click/drag -  create cell\n'
                                 '\nRight click/drag - remove cell\n'
                                 '\n<space> - next generation\n'
-                                '\n<Esc> - clear',
+                                '\n<esc> - reset',
                                 tags='help')
         self.btn_stop = tk.Button(self, text='Stop',
                                   command=self._cmd_stop, state=tk.DISABLED)
@@ -114,11 +124,16 @@ class App(tk.Tk):
                                     command=self._cmd_random)
         self.btn_glider = tk.Button(self, text='Glider',
                                     command=self._cmd_glider)
-        self.canvas.pack()
+        is_torus = tk.BooleanVar(self, value=False)
+        self.torus_checkbox = tk.Checkbutton(self, text='Torus universe',
+            variable=is_torus, command=lambda: self._game.set_torus_universe(is_torus.get()))
+        self.canvas.pack(side=tk.TOP)
+        self.torus_checkbox.pack(side=tk.TOP)
         self.btn_stop.pack(side=tk.RIGHT)
         self.btn_run.pack(side=tk.RIGHT)
         self.btn_random.pack(side=tk.RIGHT)
         self.btn_glider.pack(side=tk.RIGHT)
+
 
     def _cmd_reset(self):
         if self._runing_id is not None:
