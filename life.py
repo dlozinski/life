@@ -6,8 +6,8 @@
 import random
 import tkinter as tk
 
-DEFAULT_GAME_ROWS = 50
-DEFAULT_GAME_COLS = 50
+DEFAULT_GAME_ROWS = 80
+DEFAULT_GAME_COLS = 80
 
 
 class Game:
@@ -132,10 +132,11 @@ class App(tk.Tk):
         self.canvas.bind('<B2-Motion>', lambda event: self._cmd_drag(event, 2))
         self.canvas.bind('<B3-Motion>', lambda event: self._cmd_drag(event, 0))
         self.canvas.create_text(120, 100,
-                                text='Left click/drag -  create cell\n'
-                                '\nRight click/drag - remove cell\n'
-                                '\n<space> - next generation\n'
-                                '\n<esc> - reset',
+                                text='Mouse Button 1 -  create PLAYER 1 cell\n'
+                                '\nMouse Button 2 - create PLAYER 2 cell\n'
+                                '\nMouse Button 3 - delete cell\n'
+                                '\nSpace - next generation\n'
+                                '\nEsc - reset',
                                 tags='help')
         self.canvas.pack(side=tk.TOP)      
         is_torus = tk.BooleanVar(self, value=False)
