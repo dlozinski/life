@@ -6,8 +6,8 @@
 import random
 import tkinter as tk
 
-DEFAULT_GAME_ROWS = 10
-DEFAULT_GAME_COLS = 10
+DEFAULT_GAME_ROWS = 50
+DEFAULT_GAME_COLS = 50
 
 
 class Game:
